@@ -1,0 +1,59 @@
+<main class="layout" [class.layout--mobile]="mobileQuery.matches">
+  <mat-toolbar class="layout__toolbar">
+    <button
+      (click)="snav.toggle()"
+      type="button"
+      mat-icon-button
+      class="layout__menu-button"
+      aria-label="Botón para abrir menú lateral"
+    >
+      <mat-icon>menu</mat-icon>
+    </button>
+    <span class="layout__title">Gestión de tareas</span>
+    <span class="layout__spacer"></span>
+    <div class="layout__user">
+      <img
+        class="layout__user-avatar"
+        src="assets/img/HeiderH.png"
+        alt="Heider Hernandez"
+        title="Heider Hernandez"
+      />
+      <div class="layout__user-info">
+        <p class="layout__user-name">Heider Hernandez</p>
+      </div>
+    </div>
+  </mat-toolbar>
+
+  <mat-sidenav-container
+    class="layout__sidenav-container"
+    [style.marginTop.px]="mobileQuery.matches ? 56 : 0"
+  >
+    <mat-sidenav
+      #snav
+      [mode]="mobileQuery.matches ? 'over' : 'side'"
+      [fixedInViewport]="mobileQuery.matches"
+      fixedTopGap="56"
+      class="layout__sidenav"
+    >
+      <mat-nav-list class="layout__menu">
+        @for (menuItem of menuItems; track $index) {
+        <a
+          mat-button
+          [routerLink]="menuItem.link"
+          routerLinkActive="layout__menu-item--active"
+          class="layout__menu-item"
+        >
+          <mat-icon class="layout__menu-icon">
+            {{ menuItem.icon }}
+          </mat-icon>
+          {{ menuItem.label }}
+        </a>
+        }
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="layout__content">
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</main>
