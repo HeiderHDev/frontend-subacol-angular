@@ -4,6 +4,8 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./layout/layout.component').then((c) => c.LayoutComponent),
+      import('./layout/components/layout.component').then(
+        (c) => c.LayoutComponent
+      ),
   },
 ];
