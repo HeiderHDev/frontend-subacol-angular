@@ -1,0 +1,93 @@
+<div class="movie-list">
+  <mat-toolbar class="movie-list__toolbar">
+    <span class="movie-list__title">Películas</span>
+
+    <div class="movie-list__filters">
+      <mat-form-field appearance="outline" class="movie-list__search">
+        <mat-label>Buscar películas</mat-label>
+        <input
+          matInput
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          placeholder="Buscar por título..."
+        />
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="movie-list__category">
+        <mat-label>Categoría</mat-label>
+        <mat-select
+          [(value)]="selectedCategory"
+          (selectionChange)="onCategoryChange()"
+        >
+          <mat-option value="popular">Populares</mat-option>
+          <mat-option value="top_rated">Mejor valoradas</mat-option>
+          <mat-option value="now_playing">En cartelera</mat-option>
+          <mat-option value="upcoming">Próximos estrenos</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="movie-list__quick-filters">
+        <button
+          mat-button
+          [class.movie-list__filter--active]="showOnlyFavorites"
+          (click)="toggleFavoritesFilter()"
+        >
+          <mat-icon>favorite</mat-icon>
+          Solo favoritas
+        </button>
+
+        <button
+          mat-button
+          [class.movie-list__filter--active]="showOnlyWatched"
+          (click)="toggleWatchedFilter()"
+        >
+          <mat-icon>visibility</mat-icon>
+          Solo vistas
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>
+
+  <div class="movie-list__stats">
+    <div class="movie-list__stat">
+      <span class="movie-list__stat-number">{{
+        movieStore.movies().length
+      }}</span>
+      <span class="movie-list__stat-label">Películas</span>
+    </div>
+    <div class="movie-list__stat">
+      <span class="movie-list__stat-number">{{
+        movieStore.favorites().length
+      }}</span>
+      <span class="movie-list__stat-label">Favoritas</span>
+    </div>
+    <div class="movie-list__stat">
+      <span class="movie-list__stat-number">{{
+        movieStore.watched().length
+      }}</span>
+      <span class="movie-list__stat-label">Vistas</span>
+    </div>
+  </div>
+
+  @if (!isLoading() && displayedMovies().length > 0) {
+  <div class="movie-list__grid">
+    @for (movie of displayedMovies(); track movie.id) {
+    <app-movie-card
+      [movie]="movie"
+      [genres]="genres()"
+      (cardEvent)="handleMovieCardEvent($event)"
+    />
+    }
+  </div>
+  } @if (!isLoading() && displayedMovies().length === 0) {
+  <div class="movie-list__empty">
+    <mat-icon class="movie-list__empty-icon">movie</mat-icon>
+    <h3>No se encontraron películas</h3>
+    <p>Intenta cambiar los filtros o buscar otro término</p>
+    <button mat-raised-button color="primary" (click)="loadPopularMovies()">
+      Cargar populares
+    </button>
+  </div>
+  }
+</div>
