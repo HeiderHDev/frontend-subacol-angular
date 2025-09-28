@@ -1,0 +1,95 @@
+<mat-card class="movie-card" [class.movie-card--favorite]="movie().isFavorite">
+  <div class="movie-card__image-container">
+    <img
+      mat-card-image
+      [src]="posterUrl()"
+      [alt]="movie().title"
+      class="movie-card__image"
+      (error)="onImageError($event)"
+      (click)="onViewDetails()"
+    />
+
+    <div class="movie-card__badges">
+      @if (movie().isFavorite) {
+      <div
+        class="movie-card__badge movie-card__badge--favorite"
+        matTooltip="Favorita"
+      >
+        <mat-icon>favorite</mat-icon>
+      </div>
+      } @if (movie().isWatched) {
+      <div
+        class="movie-card__badge movie-card__badge--watched"
+        matTooltip="Vista"
+      >
+        <mat-icon>visibility</mat-icon>
+      </div>
+      }
+    </div>
+
+    <div class="movie-card__rating">
+      <mat-icon class="movie-card__rating-icon">star</mat-icon>
+      <span>{{ movie().vote_average | number : "1.1-1" }}</span>
+    </div>
+  </div>
+
+  <mat-card-content class="movie-card__content">
+    <mat-card-title class="movie-card__title" (click)="onViewDetails()">
+      {{ movie().title }}
+    </mat-card-title>
+
+    <mat-card-subtitle class="movie-card__subtitle">
+      {{ releaseYear() }} • {{ movie().original_language.toUpperCase() }}
+    </mat-card-subtitle>
+
+    @if (movieGenres().length > 0) {
+    <div class="movie-card__genres">
+      @for (genre of movieGenres(); track genre.id) {
+      <mat-chip class="movie-card__genre-chip">{{ genre.name }}</mat-chip>
+      }
+    </div>
+    } @if (movie().personalRating) {
+    <div class="movie-card__personal-rating">
+      <mat-icon>grade</mat-icon>
+      <span>Mi rating: {{ movie().personalRating }}/10</span>
+    </div>
+    } @if (movie().personalNotes) {
+    <div class="movie-card__notes">
+      <mat-icon>note</mat-icon>
+      <span>{{ movie().personalNotes }}</span>
+    </div>
+    }
+  </mat-card-content>
+
+  <mat-card-actions class="movie-card__actions">
+    <button
+      mat-icon-button
+      [class.movie-card__action--active]="movie().isFavorite"
+      (click)="onToggleFavorite()"
+      [matTooltip]="
+        movie().isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'
+      "
+    >
+      <mat-icon>{{
+        movie().isFavorite ? "favorite" : "favorite_border"
+      }}</mat-icon>
+    </button>
+
+    <button
+      mat-icon-button
+      [class.movie-card__action--active]="movie().isWatched"
+      (click)="onToggleWatched()"
+      [matTooltip]="
+        movie().isWatched ? 'Marcar como no vista' : 'Marcar como vista'
+      "
+    >
+      <mat-icon>{{
+        movie().isWatched ? "visibility" : "visibility_off"
+      }}</mat-icon>
+    </button>
+
+    <button mat-icon-button (click)="onViewDetails()" matTooltip="Ver detalles">
+      <mat-icon>info</mat-icon>
+    </button>
+  </mat-card-actions>
+</mat-card>
