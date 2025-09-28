@@ -41,10 +41,7 @@ export class LayoutComponent {
   }
 
   public ngOnInit(): void {
-    this.menuItems = [
-      { link: 'prueba1', label: 'prueba1', icon: 'task' },
-      { link: 'prueba2', label: 'prueba2', icon: 'sync' },
-    ];
+    this.menuItems = [{ link: 'movies', label: 'Películas', icon: 'movie' }];
   }
 
   public ngOnDestroy(): void {
