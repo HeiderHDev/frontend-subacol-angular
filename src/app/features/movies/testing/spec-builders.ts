@@ -1,7 +1,7 @@
 import { MovieList, Result } from '../interfaces/tmdb-response.interface';
 
 export class ResultBuilder {
-  private result: Result = {
+  private readonly result: Result = {
     adult: false,
     backdrop_path: '',
     genre_ids: [],
@@ -11,7 +11,7 @@ export class ResultBuilder {
     overview: '',
     popularity: 0,
     poster_path: '',
-    release_date: new Date(),
+    release_date: '2024-01-01',
     title: '',
     video: false,
     vote_average: 0,
@@ -32,8 +32,8 @@ export class ResultBuilder {
 }
 
 export class MovieListBuilder {
-  private movieList: MovieList = {
-    dates: { minimum: new Date('2025-01-01'), maximum: new Date('2025-12-31') },
+  private readonly movieList: MovieList = {
+    dates: { minimum: '2025-01-01', maximum: '2025-12-31' },
     page: 1,
     results: [],
     total_pages: 1,
@@ -53,7 +53,7 @@ export class MovieListBuilder {
     this.movieList.total_results = results;
     return this;
   }
-  withDates(min: Date, max: Date) {
+  withDates(min: string, max: string) {
     this.movieList.dates = { minimum: min, maximum: max };
     return this;
   }
