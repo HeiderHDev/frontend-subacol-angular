@@ -7,11 +7,15 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:ci": "ng test --configuration=ci --watch=false",
+    "sonar": "sonar-scanner -Dsonar.token={{YOUR_SONAR_TOKEN}}",
+    "sonar:analyze": "npm run test:ci && npm run sonar",
     "prepare": "husky"
   },
   "private": true,
   "dependencies": {
     "@angular-magic/ngx-toast": "^1.2.2",
+    "@angular/animations": "^19.2.15",
     "@angular/cdk": "^19.2.19",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
@@ -39,6 +43,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "sonarqube-scanner": "^4.3.2",
     "typescript": "~5.7.2"
   }
 }

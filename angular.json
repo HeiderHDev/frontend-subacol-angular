@@ -107,6 +107,14 @@
               "src/styles.scss"
             ],
             "scripts": []
+          },
+          "configurations": {
+            "ci": {
+              "browsers": "ChromeHeadless",
+              "watch": false,
+              "codeCoverage": true,
+              "karmaConfig": "karma.conf.ci.js"
+            }
           }
         }
       }
