@@ -1,0 +1,639 @@
+<mat-card class="movie-form">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>{{ isEditMode() ? "edit" : "add" }}</mat-icon>
+      {{ isEditMode() ? "Editar Película" : "Crear Nueva Película" }}
+    </mat-card-title>
+    <mat-card-subtitle>
+      {{
+        isEditMode()
+          ? "Modifica los datos de tu película personalizada"
+          : "Agrega una película personalizada a tu colección local"
+      }}
+    </mat-card-subtitle>
+  </mat-card-header>
+
+  <div class="movie-form__progress">
+    <mat-progress-bar
+      mode="determinate"
+      [value]="formProgress()"
+      [color]="formProgress() === 100 ? 'primary' : 'accent'"
+    >
+    </mat-progress-bar>
+    <span class="movie-form__progress-text">
+      Progreso: {{ formProgress() | number : "1.0-0" }}%
+    </span>
+  </div>
+
+  <mat-card-content>
+    <form [formGroup]="movieForm" class="movie-form__form">
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>info</mat-icon>
+          Información Básica
+        </h3>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field--full"
+            [class.movie-form__field--error]="hasFieldError('title')"
+            [class.movie-form__field--success]="isFieldValid('title')"
+          >
+            <mat-label>Título *</mat-label>
+            <input
+              matInput
+              formControlName="title"
+              placeholder="Ej: El Padrino"
+              [maxlength]="VALIDATION_LIMITS.TITLE.MAX"
+            />
+            <mat-hint
+              >{{ movieForm.get("title")?.value?.length || 0 }}/{{
+                VALIDATION_LIMITS.TITLE.MAX
+              }}</mat-hint
+            >
+            <mat-error>{{ getFieldError("title") }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field--full"
+            [class.movie-form__field--error]="hasFieldError('originalTitle')"
+            [class.movie-form__field--success]="isFieldValid('originalTitle')"
+          >
+            <mat-label>Título Original *</mat-label>
+            <input
+              matInput
+              formControlName="originalTitle"
+              placeholder="Ej: The Godfather"
+              [maxlength]="VALIDATION_LIMITS.ORIGINAL_TITLE.MAX"
+            />
+            <mat-hint
+              >{{ movieForm.get("originalTitle")?.value?.length || 0 }}/{{
+                VALIDATION_LIMITS.ORIGINAL_TITLE.MAX
+              }}</mat-hint
+            >
+            <mat-error>{{ getFieldError("originalTitle") }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field--full"
+            [class.movie-form__field--error]="hasFieldError('overview')"
+            [class.movie-form__field--success]="isFieldValid('overview')"
+          >
+            <mat-label>Sinopsis *</mat-label>
+            <textarea
+              matInput
+              formControlName="overview"
+              placeholder="Describe la trama de la película..."
+              rows="5"
+              [maxlength]="VALIDATION_LIMITS.OVERVIEW.MAX"
+            ></textarea>
+            <mat-hint>
+              <div class="movie-form__overview-hint">
+                <span
+                  >{{ overviewLength() }}/{{
+                    VALIDATION_LIMITS.OVERVIEW.MAX
+                  }}
+                  caracteres</span
+                >
+                <div class="movie-form__overview-progress">
+                  <div
+                    class="movie-form__overview-bar"
+                    [style.width.%]="overviewProgress()"
+                    [class.movie-form__overview-bar--warning]="
+                      overviewProgress() > 80
+                    "
+                    [class.movie-form__overview-bar--danger]="
+                      overviewProgress() > 95
+                    "
+                  ></div>
+                </div>
+              </div>
+            </mat-hint>
+            <mat-error>{{ getFieldError("overview") }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>event</mat-icon>
+          Detalles de Lanzamiento
+        </h3>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('releaseDate')"
+            [class.movie-form__field--success]="isFieldValid('releaseDate')"
+          >
+            <mat-label>Fecha de Estreno *</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              formControlName="releaseDate"
+              readonly
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="picker">
+            </mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error>{{ getFieldError("releaseDate") }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('originalLanguage')"
+            [class.movie-form__field--success]="
+              isFieldValid('originalLanguage')
+            "
+          >
+            <mat-label>Idioma Original *</mat-label>
+            <mat-select formControlName="originalLanguage">
+              @for (language of languages; track language.code) {
+              <mat-option [value]="language.code">
+                {{ language.name }}
+              </mat-option>
+              }
+            </mat-select>
+            <mat-error>{{ getFieldError("originalLanguage") }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('category')"
+            [class.movie-form__field--success]="isFieldValid('category')"
+          >
+            <mat-label>Categoría *</mat-label>
+            <mat-select formControlName="category">
+              <mat-option value="now_playing">En Cartelera</mat-option>
+              <mat-option value="upcoming">Próximos Estrenos</mat-option>
+            </mat-select>
+            <mat-error>{{ getFieldError("category") }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>category</mat-icon>
+          Géneros @if (isLoadingGenres()) {
+          <mat-icon class="movie-form__loading-icon">hourglass_empty</mat-icon>
+          }
+        </h3>
+
+        <mat-form-field
+          appearance="outline"
+          class="movie-form__field--full"
+          [class.movie-form__field--error]="hasFieldError('genreIds')"
+          [class.movie-form__field--success]="isFieldValid('genreIds')"
+        >
+          <mat-label>Seleccionar Géneros *</mat-label>
+          <mat-select formControlName="genreIds" multiple>
+            @for (genre of genres(); track genre.id) {
+            <mat-option [value]="genre.id">
+              {{ genre.name }}
+            </mat-option>
+            }
+          </mat-select>
+          <mat-hint
+            >Selecciona uno o más géneros que describan la película</mat-hint
+          >
+          <mat-error>{{ getFieldError("genreIds") }}</mat-error>
+        </mat-form-field>
+
+        @if (selectedGenres().length > 0) {
+        <div class="movie-form__genre-chips">
+          <h4 class="movie-form__chips-title">Géneros seleccionados:</h4>
+          @for (genre of selectedGenres(); track genre.id) {
+          <mat-chip
+            [removable]="!isSubmitting()"
+            (removed)="removeGenre(genre.id)"
+            class="movie-form__chip"
+          >
+            {{ genre.name }}
+            <mat-icon matChipRemove>cancel</mat-icon>
+          </mat-chip>
+          }
+        </div>
+        }
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>star_rate</mat-icon>
+          Calificaciones y Popularidad
+        </h3>
+
+        <div class="movie-form__row">
+          <div class="movie-form__field">
+            <label class="movie-form__slider-label" for="rating-slider">
+              <mat-icon>star</mat-icon>
+              Calificación:
+              {{ movieForm.get("voteAverage")?.value | number : "1.1-1" }}/10
+            </label>
+            <mat-slider
+              min="{{ VALIDATION_LIMITS.RATING.MIN }}"
+              max="{{ VALIDATION_LIMITS.RATING.MAX }}"
+              step="{{ VALIDATION_LIMITS.RATING.STEP }}"
+              discrete
+              [displayWith]="formatSliderLabel"
+              class="movie-form__slider"
+            >
+              <input
+                matSliderThumb
+                formControlName="voteAverage"
+                id="rating-slider"
+              />
+            </mat-slider>
+            <div class="movie-form__slider-hint">
+              Califica la película del 0 al 10
+            </div>
+          </div>
+
+          <div class="movie-form__field">
+            <label class="movie-form__slider-label" for="popularity-slider">
+              <mat-icon>trending_up</mat-icon>
+              Popularidad: {{ movieForm.get("popularity")?.value }}
+            </label>
+            <mat-slider
+              min="{{ VALIDATION_LIMITS.POPULARITY.MIN }}"
+              max="{{ VALIDATION_LIMITS.POPULARITY.MAX }}"
+              step="{{ VALIDATION_LIMITS.POPULARITY.STEP }}"
+              discrete
+              class="movie-form__slider"
+            >
+              <input
+                matSliderThumb
+                formControlName="popularity"
+                id="popularity-slider"
+              />
+            </mat-slider>
+            <div class="movie-form__slider-hint">
+              Índice de popularidad (0-1000)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>image</mat-icon>
+          Imágenes (Opcional)
+        </h3>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('posterPath')"
+          >
+            <mat-label>URL del Póster</mat-label>
+            <input
+              matInput
+              formControlName="posterPath"
+              placeholder="https://ejemplo.com/poster.jpg"
+              type="url"
+            />
+            <mat-hint
+              >Acepta URLs de Pinterest, Imgur, Unsplash, etc. Ej:
+              https://i.pinimg.com/564x/...</mat-hint
+            >
+            <mat-error>{{ getFieldError("posterPath") }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('backdropPath')"
+          >
+            <mat-label>URL del Backdrop</mat-label>
+            <input
+              matInput
+              formControlName="backdropPath"
+              placeholder="https://ejemplo.com/backdrop.jpg"
+              type="url"
+            />
+            <mat-hint
+              >Acepta URLs de Pinterest, Imgur, Unsplash, etc. Imagen panorámica
+              recomendada</mat-hint
+            >
+            <mat-error>{{ getFieldError("backdropPath") }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>schedule</mat-icon>
+          Detalles Técnicos
+        </h3>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('runtime')"
+          >
+            <mat-label>Duración (minutos)</mat-label>
+            <input
+              matInput
+              formControlName="runtime"
+              type="number"
+              min="{{ VALIDATION_LIMITS.RUNTIME.MIN }}"
+              max="{{ VALIDATION_LIMITS.RUNTIME.MAX }}"
+              placeholder="120"
+            />
+            <mat-hint>{{
+              formatRuntime(movieForm.get("runtime")?.value || 0)
+            }}</mat-hint>
+            <mat-error>{{ getFieldError("runtime") }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('status')"
+          >
+            <mat-label>Estado</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="Released">Estrenada</mat-option>
+              <mat-option value="In Production">En Producción</mat-option>
+              <mat-option value="Post Production">Post-Producción</mat-option>
+              <mat-option value="Planned">Planeada</mat-option>
+              <mat-option value="Canceled">Cancelada</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>attach_money</mat-icon>
+          Información Financiera
+        </h3>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('budget')"
+          >
+            <mat-label>Presupuesto (USD)</mat-label>
+            <input
+              matInput
+              formControlName="budget"
+              type="number"
+              min="{{ VALIDATION_LIMITS.BUDGET.MIN }}"
+              max="{{ VALIDATION_LIMITS.BUDGET.MAX }}"
+              placeholder="0"
+            />
+            <mat-hint>{{
+              formatCurrency(movieForm.get("budget")?.value || 0)
+            }}</mat-hint>
+            <mat-error>{{ getFieldError("budget") }}</mat-error>
+          </mat-form-field>
+
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field"
+            [class.movie-form__field--error]="hasFieldError('revenue')"
+          >
+            <mat-label>Recaudación (USD)</mat-label>
+            <input
+              matInput
+              formControlName="revenue"
+              type="number"
+              min="{{ VALIDATION_LIMITS.REVENUE.MIN }}"
+              max="{{ VALIDATION_LIMITS.REVENUE.MAX }}"
+              placeholder="0"
+            />
+            <mat-hint>{{
+              formatCurrency(movieForm.get("revenue")?.value || 0)
+            }}</mat-hint>
+            <mat-error>{{ getFieldError("revenue") }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>info_outline</mat-icon>
+          Información Adicional
+        </h3>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field--full"
+            [class.movie-form__field--error]="hasFieldError('tagline')"
+          >
+            <mat-label>Eslogan</mat-label>
+            <input
+              matInput
+              formControlName="tagline"
+              placeholder="Ej: La película que cambiará tu vida"
+              [maxlength]="VALIDATION_LIMITS.TAGLINE.MAX"
+            />
+            <mat-hint
+              >{{ movieForm.get("tagline")?.value?.length || 0 }}/{{
+                VALIDATION_LIMITS.TAGLINE.MAX
+              }}</mat-hint
+            >
+            <mat-error>{{ getFieldError("tagline") }}</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="movie-form__row">
+          <mat-form-field
+            appearance="outline"
+            class="movie-form__field--full"
+            [class.movie-form__field--error]="hasFieldError('homepage')"
+          >
+            <mat-label>Página Web Oficial</mat-label>
+            <input
+              matInput
+              formControlName="homepage"
+              type="url"
+              placeholder="https://ejemplo.com"
+              [maxlength]="VALIDATION_LIMITS.HOMEPAGE.MAX"
+            />
+            <mat-hint
+              >URL completa de la página oficial de la película</mat-hint
+            >
+            <mat-error>{{ getFieldError("homepage") }}</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>play_circle</mat-icon>
+          Videos (Trailers y Clips)
+          <button
+            mat-icon-button
+            type="button"
+            (click)="addVideo()"
+            class="movie-form__add-video-btn"
+            [disabled]="isSubmitting()"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+        </h3>
+
+        @if (videos().length > 0) {
+        <div class="movie-form__videos-list">
+          @for (video of videos(); track $index) {
+          <div class="movie-form__video-item">
+            <div class="movie-form__video-info">
+              <strong>{{ video.name }}</strong>
+              <small>{{ video.type }} - YouTube ID: {{ video.key }}</small>
+            </div>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="removeVideo($index)"
+              [disabled]="isSubmitting()"
+              class="movie-form__remove-video-btn"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+          }
+        </div>
+        } @else {
+        <p class="movie-form__no-videos">
+          No hay videos agregados. Haz clic en el botón + para agregar trailers
+          o clips de YouTube.
+        </p>
+        }
+      </div>
+
+      <div class="movie-form__section">
+        <h3 class="movie-form__section-title">
+          <mat-icon>settings</mat-icon>
+          Configuración Adicional
+        </h3>
+
+        <div class="movie-form__checkboxes">
+          <mat-checkbox formControlName="adult" class="movie-form__checkbox">
+            <div class="movie-form__checkbox-content">
+              <strong>Contenido para adultos</strong>
+              <small>La película contiene contenido explícito</small>
+            </div>
+          </mat-checkbox>
+
+          <mat-checkbox formControlName="video" class="movie-form__checkbox">
+            <div class="movie-form__checkbox-content">
+              <strong>Es un video/documental</strong>
+              <small>La película es principalmente un video o documental</small>
+            </div>
+          </mat-checkbox>
+        </div>
+      </div>
+    </form>
+  </mat-card-content>
+
+  <mat-card-actions class="movie-form__actions">
+    <button
+      mat-button
+      type="button"
+      (click)="onReset()"
+      [disabled]="isSubmitting()"
+      class="movie-form__button-secondary"
+    >
+      <mat-icon>refresh</mat-icon>
+      Limpiar Formulario
+    </button>
+
+    <div class="movie-form__primary-actions">
+      <button
+        mat-button
+        type="button"
+        (click)="onCancel()"
+        [disabled]="isSubmitting()"
+        class="movie-form__cancel-button"
+      >
+        <mat-icon>arrow_back</mat-icon>
+        Cancelar
+      </button>
+
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="onSubmit()"
+        [disabled]="!canSubmit()"
+        class="movie-form__submit-button"
+      >
+        @if (isSubmitting()) {
+        <mat-icon class="movie-form__spinning-icon">hourglass_empty</mat-icon>
+        } @else {
+        <mat-icon>{{ isEditMode() ? "save" : "add" }}</mat-icon>
+        } @if (isSubmitting()) {
+        {{ isEditMode() ? "Actualizando..." : "Creando..." }}
+        } @else {
+        {{ isEditMode() ? "Actualizar Película" : "Crear Película" }}
+        }
+      </button>
+    </div>
+  </mat-card-actions>
+
+  @if (hasPreviewData()) {
+  <mat-card-footer class="movie-form__preview">
+    <div class="movie-form__preview-header">
+      <mat-icon>visibility</mat-icon>
+      <h4>Vista Previa</h4>
+    </div>
+
+    <div class="movie-form__preview-content">
+      <div class="movie-form__preview-title">
+        {{ movieForm.get("title")?.value }}
+        @if (movieForm.get("releaseDate")?.value) {
+        <span class="movie-form__preview-year">
+          ({{ formatDate(movieForm.get("releaseDate")?.value).split(" ")[2] }})
+        </span>
+        }
+      </div>
+
+      <div class="movie-form__preview-meta">
+        @if (selectedGenres().length > 0) {
+        <span class="movie-form__preview-genres">
+          <mat-icon>local_offer</mat-icon>
+          {{ getSelectedGenreNames() }}
+        </span>
+        } @if (movieForm.get("originalLanguage")?.value) {
+        <span class="movie-form__preview-language">
+          <mat-icon>language</mat-icon>
+          {{ selectedLanguageName() }}
+        </span>
+        }
+
+        <span class="movie-form__preview-rating">
+          <mat-icon>star</mat-icon>
+          {{ movieForm.get("voteAverage")?.value | number : "1.1-1" }}/10
+        </span>
+      </div>
+
+      @if (movieForm.get("overview")?.value) {
+      <p class="movie-form__preview-overview">
+        {{ movieForm.get("overview")?.value }}
+      </p>
+      } @if (movieForm.get("releaseDate")?.value) {
+      <small class="movie-form__preview-date">
+        <mat-icon>event</mat-icon>
+        Estreno: {{ formatDate(movieForm.get("releaseDate")?.value) }}
+      </small>
+      }
+    </div>
+  </mat-card-footer>
+  }
+</mat-card>
