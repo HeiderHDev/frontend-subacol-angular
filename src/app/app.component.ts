@@ -4,6 +4,7 @@ import {
   Component,
   DestroyRef,
   inject,
+  OnInit,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet } from '@angular/router';
@@ -16,7 +17,7 @@ import { SpinnerComponent } from './core/components/spinner/spinner.component';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'frontend-subacol-angular';
   public loading = false;
   private readonly _loadingService = inject(LoadingService);
