@@ -1,0 +1,142 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.movie-recommendations {
+  padding: 24px 0;
+  background: var(--sys-surface-container-lowest);
+  border-radius: 16px;
+  margin: 16px 0;
+
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    min-height: 200px;
+
+    p {
+      color: var(--sys-on-surface-variant);
+      margin: 0;
+      font-size: 0.875rem;
+      text-align: center;
+    }
+  }
+
+  &__item {
+    flex: 0 0 280px;
+    max-width: 280px;
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: scale(1.02);
+    }
+
+    @media (max-width: 768px) {
+      flex: 0 0 220px;
+      max-width: 220px;
+    }
+
+    @media (min-width: 1200px) {
+      flex: 0 0 300px;
+      max-width: 300px;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    min-height: 200px;
+    color: var(--sys-on-surface-variant);
+
+    &-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      opacity: 0.6;
+      color: var(--sys-on-surface-variant);
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: var(--sys-on-surface);
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      max-width: 300px;
+    }
+  }
+  ::ng-deep app-carousel {
+    .carousel__header {
+      padding: 0 24px;
+      margin-bottom: 20px;
+    }
+
+    .carousel__title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--sys-on-surface);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &::before {
+        content: "🎬";
+        font-size: 1.25rem;
+      }
+    }
+
+    .carousel__container {
+      padding: 0 24px;
+    }
+
+    .carousel__track {
+      gap: 20px;
+    }
+
+    .carousel__control {
+      background: var(--sys-surface-container-high);
+      border: 1px solid var(--sys-outline-variant);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      &:hover:not(:disabled) {
+        background: var(--sys-primary-container);
+        color: var(--sys-on-primary-container);
+        border-color: var(--sys-primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+
+    .carousel__dots {
+      padding: 0 24px;
+    }
+
+    .carousel__dot {
+      width: 10px;
+      height: 10px;
+      background: var(--sys-outline-variant);
+
+      &--active {
+        background: var(--sys-primary);
+        box-shadow: 0 0 0 2px var(--sys-primary-container);
+      }
+
+      &:hover:not(.carousel__dot--active) {
+        background: var(--sys-on-surface-variant);
+      }
+    }
+  }
+}

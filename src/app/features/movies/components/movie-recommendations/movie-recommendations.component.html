@@ -1,0 +1,26 @@
+<div class="movie-recommendations">
+  @if (recommendations().length > 0) {
+  <app-carousel
+    [title]="'También te puede interesar'"
+    [itemWidth]="280"
+    [itemsToShow]="4"
+    [showDots]="true"
+  >
+    @for (movie of recommendations(); track movie.id) {
+    <div class="movie-recommendations__item">
+      <app-movie-card
+        [movie]="movie"
+        [genres]="genres()"
+        (cardEvent)="handleMovieCardEvent($event)"
+      />
+    </div>
+    }
+  </app-carousel>
+  } @else {
+  <div class="movie-recommendations__empty">
+    <mat-icon class="movie-recommendations__empty-icon">movie_filter</mat-icon>
+    <h3>No hay recomendaciones</h3>
+    <p>No se encontraron películas similares en este momento.</p>
+  </div>
+  }
+</div>
