@@ -1,0 +1,29 @@
+<div class="favorites">
+  <mat-toolbar class="favorites__toolbar">
+    <mat-icon>favorite</mat-icon>
+    <span class="favorites__title">Mis Películas Favoritas</span>
+    <span class="favorites__count">({{ movieStore.favorites().length }})</span>
+  </mat-toolbar>
+
+  @if (movieStore.favorites().length > 0) {
+  <div class="favorites__grid">
+    @for (movie of movieStore.favorites(); track movie.id) {
+    <app-movie-card
+      [movie]="movie"
+      [genres]="[]"
+      (cardEvent)="handleMovieCardEvent($event)"
+    />
+    }
+  </div>
+  } @else {
+  <div class="favorites__empty">
+    <mat-icon class="favorites__empty-icon">favorite_border</mat-icon>
+    <h3>No tienes películas favoritas</h3>
+    <p>Marca películas como favoritas y aparecerán aquí</p>
+    <button mat-raised-button color="primary" routerLink="/movies">
+      <mat-icon>movie</mat-icon>
+      Explorar Películas
+    </button>
+  </div>
+  }
+</div>

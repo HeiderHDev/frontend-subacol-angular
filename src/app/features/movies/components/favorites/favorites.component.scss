@@ -1,0 +1,30 @@
+@use "../../../../assets/styles/common-styles" as *;
+
+.favorites {
+  &__toolbar {
+    @include toolbar-base;
+  }
+
+  &__title {
+    @include title-text;
+  }
+
+  &__count {
+    font-size: $font-size-md;
+    color: var(--sys-primary);
+    font-weight: $font-weight-medium;
+    margin-left: $spacing-xs;
+  }
+
+  &__grid {
+    @include grid-base(300px);
+  }
+
+  &__empty {
+    @include empty-state;
+  }
+
+  &__empty-icon {
+    @include empty-icon;
+  }
+}
