@@ -53,7 +53,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -85,7 +85,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -97,13 +97,11 @@ describe('MovieStoreService', () => {
         },
       ];
 
-      // Set initial movies with local data
       service.setMovies(apiResults);
       service.toggleFavorite(1);
       service.updateRating(1, 9.0);
       service.updateNotes(1, 'Great movie');
 
-      // Update with same API results
       service.setMovies(apiResults);
 
       const movie = service.getMovieById(1);
@@ -122,7 +120,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -153,7 +151,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -187,7 +185,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -204,7 +202,7 @@ describe('MovieStoreService', () => {
 
       expect(service.getMovieById(1)?.personalRating).toBe(9.5);
       expect(toastServiceSpy.success).toHaveBeenCalledWith(
-        'Rating',
+        'Rating Actualizado',
         '"Test Movie": 9.5/10'
       );
     });
@@ -217,7 +215,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -246,7 +244,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -263,8 +261,8 @@ describe('MovieStoreService', () => {
 
       expect(service.getMovieById(1)?.personalNotes).toBe('Great movie!');
       expect(toastServiceSpy.success).toHaveBeenCalledWith(
-        'Notas',
-        'Notas guardadas'
+        'Notas Actualizadas',
+        'Las notas se guardaron correctamente'
       );
     });
   });
@@ -278,7 +276,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -298,7 +296,7 @@ describe('MovieStoreService', () => {
       expect(movie?.watchedDate).toBeDefined();
       expect(service.watched().length).toBe(1);
       expect(toastServiceSpy.success).toHaveBeenCalledWith(
-        'Estado',
+        'Estado Actualizado',
         '"Test Movie" marcada como vista'
       );
     });
@@ -311,7 +309,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -343,7 +341,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -376,7 +374,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -394,8 +392,8 @@ describe('MovieStoreService', () => {
       expect(service.movies()).toEqual([]);
       expect(localStorage.getItem('movieApp_data')).toBeNull();
       expect(toastServiceSpy.success).toHaveBeenCalledWith(
-        'Limpieza',
-        'Datos eliminados'
+        'Datos Eliminados',
+        'Todas las películas fueron eliminadas'
       );
     });
   });
@@ -409,7 +407,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -439,7 +437,7 @@ describe('MovieStoreService', () => {
           overview: 'Test overview',
           poster_path: '/test.jpg',
           backdrop_path: '/backdrop.jpg',
-          release_date: new Date('2024-01-01'),
+          release_date: '2024-01-01',
           vote_average: 8.0,
           vote_count: 100,
           popularity: 50,
@@ -459,7 +457,6 @@ describe('MovieStoreService', () => {
 
       localStorage.setItem('movieApp_data', JSON.stringify(movies));
 
-      // Reset TestBed to get fresh service instance
       TestBed.resetTestingModule();
       const toastSpy = jasmine.createSpyObj('ToastService', [
         'success',
