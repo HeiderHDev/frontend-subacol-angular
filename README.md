@@ -58,7 +58,7 @@ src/app/
 
 ### 1. Clonar el Repositorio
 ```bash
-git clone [URL_DEL_REPOSITORIO]
+git clone [https://github.com/HeiderHDev/frontend-subacol-angular.git]
 cd frontend-subacol-angular
 ```
 
