@@ -1,0 +1,68 @@
+@use "../../../../assets/styles/common-styles" as *;
+
+.my-movies {
+  &__toolbar {
+    @include toolbar-base;
+  }
+
+  &__title {
+    @include title-text;
+  }
+
+  &__spacer {
+    @include spacer;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+
+    @media (max-width: $mobile) {
+      padding: $spacing-md;
+      gap: $spacing-md;
+    }
+  }
+
+  &__stat-card {
+    @include stat-card;
+  }
+
+  &__stat-number {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    color: var(--sys-primary);
+    margin-bottom: $spacing-xs;
+  }
+
+  &__stat-label {
+    font-size: $font-size-sm;
+    color: var(--sys-on-surface-variant);
+    font-weight: $font-weight-medium;
+  }
+
+  &__grid {
+    @include grid-base(300px);
+  }
+
+  &__card-wrapper {
+    @include card-wrapper;
+  }
+
+  &__card-actions {
+    @include card-actions;
+
+    .my-movies__card-wrapper:hover & {
+      opacity: 1;
+    }
+  }
+
+  &__empty {
+    @include empty-state;
+  }
+
+  &__empty-icon {
+    @include empty-icon;
+  }
+}
