@@ -54,13 +54,6 @@
 
     <mat-sidenav-content class="layout__content">
       <router-outlet></router-outlet>
-
-      <!-- Spinner global -->
-      @if (loadingService.isLoading() | async) {
-      <div class="layout__loading-overlay">
-        <app-spinner [loading]="true"></app-spinner>
-      </div>
-      }
     </mat-sidenav-content>
   </mat-sidenav-container>
 </main>
