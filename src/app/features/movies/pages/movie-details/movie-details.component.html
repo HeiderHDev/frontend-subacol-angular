@@ -1,0 +1,271 @@
+@if (movieDetails()) {
+<div class="movie-details">
+  <div class="movie-details__navigation">
+    <button mat-button (click)="goBackToMovies()">
+      <mat-icon>arrow_back</mat-icon>
+      Volver a películas
+    </button>
+  </div>
+
+  <div
+    class="movie-details__hero"
+    [style.background-image]="'url(' + getBackdropUrl() + ')'"
+  >
+    <div class="movie-details__hero-overlay">
+      <div class="movie-details__hero-content">
+        <div class="movie-details__main-info">
+          <img
+            [src]="getPosterUrl()"
+            [alt]="movieDetails()!.title"
+            class="movie-details__poster"
+          />
+
+          <div class="movie-details__info">
+            <h1 class="movie-details__title">{{ movieDetails()!.title }}</h1>
+
+            @if (movieDetails()!.original_title !== movieDetails()!.title) {
+            <h2 class="movie-details__original-title">
+              {{ movieDetails()!.original_title }}
+            </h2>
+            }
+
+            <div class="movie-details__meta">
+              <span class="movie-details__rating">
+                <mat-icon>star</mat-icon>
+                {{ movieDetails()!.vote_average | number : "1.1-1" }}/10
+              </span>
+              <span class="movie-details__year">{{ getReleaseYear() }}</span>
+              @if (formatRuntime()) {
+              <span class="movie-details__runtime">{{ formatRuntime() }}</span>
+              }
+              <span class="movie-details__rating-info">{{
+                movieDetails()!.adult ? "Para adultos" : "Todos los públicos"
+              }}</span>
+            </div>
+
+            @if (movieDetails()!.genres.length > 0) {
+            <div class="movie-details__genres">
+              @for (genre of movieDetails()!.genres; track genre.id) {
+              <mat-chip class="movie-details__genre-chip">{{
+                genre.name
+              }}</mat-chip>
+              }
+            </div>
+            } @if (movieDetails()!.overview) {
+            <p class="movie-details__overview">
+              {{ movieDetails()!.overview }}
+            </p>
+            }
+
+            <div class="movie-details__actions">
+              <button
+                mat-raised-button
+                color="primary"
+                [class.movie-details__action--active]="isMovieFavorite()"
+                (click)="toggleFavorite()"
+              >
+                <mat-icon>{{
+                  isMovieFavorite() ? "favorite" : "favorite_border"
+                }}</mat-icon>
+                {{ isMovieFavorite() ? "En Favoritos" : "Agregar a Favoritos" }}
+              </button>
+
+              <button
+                mat-raised-button
+                [class.movie-details__action--active]="isMovieWatched()"
+                (click)="toggleWatched()"
+              >
+                <mat-icon>{{
+                  isMovieWatched() ? "visibility" : "visibility_off"
+                }}</mat-icon>
+                {{
+                  isMovieWatched() ? "Marcada como Vista" : "Marcar como Vista"
+                }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="movie-details__content">
+    <mat-tab-group class="movie-details__tabs" animationDuration="300ms">
+      <mat-tab label="Información">
+        <div class="movie-details__tab-content">
+          <div class="movie-details__stats">
+            <div class="movie-details__stat-card">
+              <h3>Presupuesto</h3>
+              <p>{{ formatBudget() }}</p>
+            </div>
+
+            <div class="movie-details__stat-card">
+              <h3>Recaudación</h3>
+              <p>{{ formatRevenue() }}</p>
+            </div>
+
+            <div class="movie-details__stat-card">
+              <h3>Idioma Original</h3>
+              <p>{{ movieDetails()!.original_language.toUpperCase() }}</p>
+            </div>
+
+            <div class="movie-details__stat-card">
+              <h3>Estado</h3>
+              <p>{{ movieDetails()!.status }}</p>
+            </div>
+
+            @if (movieDetails()!.vote_count) {
+            <div class="movie-details__stat-card">
+              <h3>Votos</h3>
+              <p>{{ movieDetails()!.vote_count | number }}</p>
+            </div>
+            } @if (movieDetails()!.popularity) {
+            <div class="movie-details__stat-card">
+              <h3>Popularidad</h3>
+              <p>{{ movieDetails()!.popularity | number : "1.0-1" }}</p>
+            </div>
+            }
+          </div>
+
+          @if (getMainCast().length > 0) {
+          <div class="movie-details__cast-section">
+            <h3 class="movie-details__section-title">Reparto Principal</h3>
+            <div class="movie-details__cast-grid">
+              @for (actor of getMainCast(); track actor.id) {
+              <div class="movie-details__cast-member">
+                <img
+                  [src]="getProfileUrl(actor.profile_path)"
+                  [alt]="actor.name"
+                  class="movie-details__cast-photo"
+                />
+                <div class="movie-details__cast-info">
+                  <h4>{{ actor.name }}</h4>
+                  <p>{{ actor.character }}</p>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          } @if (getDirectors().length > 0) {
+          <div class="movie-details__crew-section">
+            <h3 class="movie-details__section-title">Dirección</h3>
+            <div class="movie-details__directors">
+              @for (director of getDirectors(); track director.id) {
+              <div class="movie-details__director">
+                <img
+                  [src]="getProfileUrl(director.profile_path)"
+                  [alt]="director.name"
+                  class="movie-details__director-photo"
+                />
+                <h4>{{ director.name }}</h4>
+              </div>
+              }
+            </div>
+          </div>
+          } @if (movieDetails()!.tagline) {
+          <div class="movie-details__additional-info">
+            <h3 class="movie-details__section-title">Eslogan</h3>
+            <p class="movie-details__tagline">{{ movieDetails()!.tagline }}</p>
+          </div>
+          } @if (movieDetails()!.production_companies.length > 0) {
+          <div class="movie-details__production-section">
+            <h3 class="movie-details__section-title">Productoras</h3>
+            <div class="movie-details__production-companies">
+              @for (company of movieDetails()!.production_companies; track
+              company.id) {
+              <div class="movie-details__production-company">
+                @if (company.logo_path) {
+                <img
+                  [src]="getCompanyLogoUrl(company.logo_path)"
+                  [alt]="company.name"
+                  class="movie-details__company-logo"
+                />
+                }
+                <span>{{ company.name }}</span>
+              </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Trailers y clips">
+        <div class="movie-details__tab-content">
+          @if (videos().length > 0) { @if (selectedTrailerUrl()) {
+          <div class="movie-details__video-player">
+            <iframe
+              [src]="selectedTrailerUrl()!"
+              class="movie-details__iframe"
+              allow="fullscreen"
+              title="Trailer de la película"
+            ></iframe>
+          </div>
+          }
+
+          <div class="movie-details__video-list">
+            <h3 class="movie-details__section-title">Todos los trailers</h3>
+            <div class="movie-details__video-grid">
+              @for (video of videos(); track video.id) {
+              <button
+                type="button"
+                class="movie-details__video-item"
+                (click)="selectTrailer(video)"
+                [attr.aria-label]="'Reproducir ' + video.name"
+                tabindex="0"
+                (keydown.enter)="selectTrailer(video)"
+                (keydown.space)="selectTrailer(video)"
+              >
+                <div class="movie-details__video-thumbnail">
+                  <img
+                    [src]="
+                      'https://img.youtube.com/vi/' +
+                      video.key +
+                      '/mqdefault.jpg'
+                    "
+                    [alt]="video.name"
+                  />
+                  <div class="movie-details__play-button">
+                    <mat-icon>play_arrow</mat-icon>
+                  </div>
+                </div>
+                <h4>{{ video.name }}</h4>
+                <p>{{ video.type }}</p>
+              </button>
+              }
+            </div>
+          </div>
+          } @else {
+          <div class="movie-details__no-videos">
+            <mat-icon>videocam_off</mat-icon>
+            <h3>No hay trailers disponibles</h3>
+            <p>
+              Esta película no tiene trailers o clips disponibles en este
+              momento.
+            </p>
+          </div>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="movie-details__recommendations">
+    @if (movieId()) {
+    <app-movie-recommendations
+      [movieId]="movieId()!"
+      (cardEvent)="handleRecommendationEvent($event)"
+    />
+    }
+  </div>
+</div>
+} @else {
+<div class="movie-details__error">
+  <mat-icon>error</mat-icon>
+  <h3>Error al cargar los detalles</h3>
+  <p>No se pudieron cargar los detalles de esta película.</p>
+  <button mat-raised-button color="primary" (click)="loadMovieDetails()">
+    Reintentar
+  </button>
+</div>
+}
