@@ -15,7 +15,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { LoadingService } from '@core/services/loading.service';
-import { SpinnerComponent } from '@core/components/spinner/spinner.component';
 import { MenuItem } from '../interface/menu-item.interface';
 
 const materialModules = [
@@ -30,7 +29,7 @@ const materialModules = [
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterModule, CommonModule, SpinnerComponent, ...materialModules],
+  imports: [RouterModule, CommonModule, ...materialModules],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',
 })
