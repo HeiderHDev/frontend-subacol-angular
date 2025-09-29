@@ -92,16 +92,12 @@
       Cargar populares
     </button>
   </div>
-  }
-
-  <!-- Spinner de carga para infinite scroll -->
-  @if (isLoadingMore()) {
+  } @if (isLoadingMore()) {
   <div class="movie-list__loading-more">
     <mat-spinner diameter="40"></mat-spinner>
     <p>Cargando más películas...</p>
   </div>
   }
 
-  <!-- Sentinel para infinite scroll -->
   <div #sentinel class="movie-list__sentinel"></div>
 </div>
