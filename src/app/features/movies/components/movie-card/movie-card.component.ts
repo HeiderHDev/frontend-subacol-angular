@@ -6,9 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { Movie } from '../../interfaces/movie.interface';
 import { Genre } from '../../interfaces/genre.interface';
 import { MovieApiService } from '../../services/movie-api.service';
+import { Result } from '../../interfaces/tmdb-response.interface';
+import { Movie } from '../../interfaces/movie.interface';
 
 /**
  * Evento que emite el MovieCard
@@ -40,7 +41,7 @@ export interface MovieCardEvent {
 export class MovieCardComponent {
   private readonly movieApiService = inject(MovieApiService);
 
-  public readonly movie = input.required<Movie>();
+  public readonly movie = input.required<Result | Movie>();
   public readonly genres = input<Genre[]>([]);
 
   public readonly cardEvent = output<MovieCardEvent>();
@@ -60,6 +61,30 @@ export class MovieCardComponent {
       .filter((genre) => movieGenreIds.includes(genre.id))
       .slice(0, 3);
   });
+
+  public isFavorite(): boolean {
+    return 'isFavorite' in this.movie()
+      ? (this.movie() as Movie).isFavorite
+      : false;
+  }
+
+  public isWatched(): boolean {
+    return 'isWatched' in this.movie()
+      ? (this.movie() as Movie).isWatched
+      : false;
+  }
+
+  public getPersonalRating(): number | null {
+    return 'personalRating' in this.movie()
+      ? (this.movie() as Movie).personalRating
+      : null;
+  }
+
+  public getPersonalNotes(): string {
+    return 'personalNotes' in this.movie()
+      ? (this.movie() as Movie).personalNotes
+      : '';
+  }
 
   public onToggleFavorite(): void {
     this.cardEvent.emit({ type: 'favoriteToggle', movieId: this.movie().id });
