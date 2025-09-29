@@ -1,6 +1,12 @@
 import { MediaMatcher } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -8,6 +14,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { LoadingService } from '@core/services/loading.service';
+import { SpinnerComponent } from '@core/components/spinner/spinner.component';
 import { MenuItem } from '../interface/menu-item.interface';
 
 const materialModules = [
@@ -22,14 +30,15 @@ const materialModules = [
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [RouterModule, CommonModule, ...materialModules],
+  imports: [RouterModule, CommonModule, SpinnerComponent, ...materialModules],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.scss',
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnDestroy, OnInit {
   public mobileQuery!: MediaQueryList;
   public menuItems: MenuItem[] = [];
-  private _mobileQueryListener: () => void;
+  public readonly loadingService = inject(LoadingService);
+  private readonly _mobileQueryListener: () => void;
 
   constructor() {
     const changeDetectorRef = inject(ChangeDetectorRef);
@@ -41,7 +50,12 @@ export class LayoutComponent {
   }
 
   public ngOnInit(): void {
-    this.menuItems = [{ link: 'movies', label: 'Películas', icon: 'movie' }];
+    this.menuItems = [
+      { link: 'movies', label: 'Películas', icon: 'movie' },
+      { link: 'movies/create', label: 'Crear Película', icon: 'add_circle' },
+      { link: 'my-movies', label: 'Mis Películas', icon: 'video_library' },
+      { link: 'favorites', label: 'Favoritos', icon: 'favorite' },
+    ];
   }
 
   public ngOnDestroy(): void {
