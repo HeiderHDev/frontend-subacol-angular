@@ -1,0 +1,48 @@
+// ===== ESPACIADOS =====
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// ===== BREAKPOINTS =====
+$mobile: 600px;
+$tablet: 900px;
+$desktop: 1200px;
+
+// ===== BORDER RADIUS =====
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+
+// ===== ELEVACIONES/SOMBRAS =====
+$elevation-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+$elevation-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+$elevation-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+// ===== TRANSICIONES =====
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.5s ease;
+
+// ===== TIPOGRAFÍA =====
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-md: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-xxl: 1.5rem;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ===== GRID =====
+$grid-gap: $spacing-lg;
+$grid-gap-mobile: $spacing-md;
+
+// ===== CONTENEDORES =====
+$container-max-width: 1200px;
+$card-max-width: 800px;
