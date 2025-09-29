@@ -24,6 +24,7 @@
           <mat-option value="top_rated">Mejor valoradas</mat-option>
           <mat-option value="now_playing">En cartelera</mat-option>
           <mat-option value="upcoming">Próximos estrenos</mat-option>
+          <mat-option value="custom">Mis películas personalizadas</mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -51,43 +52,56 @@
 
   <div class="movie-list__stats">
     <div class="movie-list__stat">
-      <span class="movie-list__stat-number">{{
-        movieStore.movies().length
-      }}</span>
-      <span class="movie-list__stat-label">Películas</span>
+      <span class="movie-list__stat-number">{{ store.movies().length }}</span>
+      <span class="movie-list__stat-label">Total</span>
     </div>
     <div class="movie-list__stat">
       <span class="movie-list__stat-number">{{
-        movieStore.favorites().length
+        store.customMovies().length
+      }}</span>
+      <span class="movie-list__stat-label">Personalizadas</span>
+    </div>
+    <div class="movie-list__stat">
+      <span class="movie-list__stat-number">{{
+        store.favorites().length
       }}</span>
       <span class="movie-list__stat-label">Favoritas</span>
     </div>
     <div class="movie-list__stat">
-      <span class="movie-list__stat-number">{{
-        movieStore.watched().length
-      }}</span>
+      <span class="movie-list__stat-number">{{ store.watched().length }}</span>
       <span class="movie-list__stat-label">Vistas</span>
     </div>
   </div>
 
-  @if (!isLoading() && displayedMovies().length > 0) {
+  @if (displayed().length > 0) {
   <div class="movie-list__grid">
-    @for (movie of displayedMovies(); track movie.id) {
+    @for (movie of displayed(); track movie.id) {
     <app-movie-card
       [movie]="movie"
       [genres]="genres()"
-      (cardEvent)="handleMovieCardEvent($event)"
+      (cardEvent)="handleCard($event)"
     />
     }
   </div>
-  } @if (!isLoading() && displayedMovies().length === 0) {
+  } @if (displayed().length === 0) {
   <div class="movie-list__empty">
     <mat-icon class="movie-list__empty-icon">movie</mat-icon>
     <h3>No se encontraron películas</h3>
     <p>Intenta cambiar los filtros o buscar otro término</p>
-    <button mat-raised-button color="primary" (click)="loadPopularMovies()">
+    <button mat-raised-button color="primary" (click)="resetAndLoad()">
       Cargar populares
     </button>
   </div>
   }
+
+  <!-- Spinner de carga para infinite scroll -->
+  @if (isLoadingMore()) {
+  <div class="movie-list__loading-more">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Cargando más películas...</p>
+  </div>
+  }
+
+  <!-- Sentinel para infinite scroll -->
+  <div #sentinel class="movie-list__sentinel"></div>
 </div>

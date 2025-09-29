@@ -35,6 +35,8 @@ describe('MovieListComponent (AAA + Builders)', () => {
     movies = (): Movie[] => this._movies;
     favorites = (): Movie[] => this._movies.filter((m: Movie) => m.isFavorite);
     watched = (): Movie[] => this._movies.filter((m: Movie) => m.isWatched);
+    customMovies = (): Movie[] => this._movies.filter((m: Movie) => m.id < 0);
+    tmdbMovies = (): Movie[] => this._movies.filter((m: Movie) => m.id > 0);
 
     setMovies = (results: Result[]): void => {
       this._movies = results.map(asMovie);
@@ -63,7 +65,6 @@ describe('MovieListComponent (AAA + Builders)', () => {
     'info',
   ]);
 
-  // Datos base con Builders
   const r1: Result = new ResultBuilder()
     .withId(1)
     .withTitle('A')
@@ -78,7 +79,7 @@ describe('MovieListComponent (AAA + Builders)', () => {
   const list = (): MovieList =>
     new MovieListBuilder()
       .withResults([r1, r2])
-      .withDates(new Date('2025-01-01'), new Date('2025-12-31'))
+      .withDates('2025-01-01', '2025-12-31')
       .build();
 
   const genres: Genre[] = [
@@ -106,52 +107,46 @@ describe('MovieListComponent (AAA + Builders)', () => {
     fixture.detectChanges();
   });
 
-  const displayed = (): Movie[] => component['displayedMovies']();
+  const displayed = (): Movie[] => component.displayed();
 
   it('ngOnInit: carga géneros y populares, apaga loading y llena displayed', () => {
     expect(apiSpy.getGenres).toHaveBeenCalled();
     expect(apiSpy.getPopularMovies).toHaveBeenCalled();
-    expect(component.isLoading()).toBeFalse();
     expect(displayed().length).toBe(2);
   });
 
-  it('loadTopRatedMovies: actualiza store y displayed', () => {
+  it('onCategoryChange: carga categoría top_rated', () => {
+    component.selectedCategory = 'top_rated';
     apiSpy.getTopRatedMovies.and.returnValue(of(list()));
 
-    component.loadTopRatedMovies();
+    component.onCategoryChange();
 
     expect(apiSpy.getTopRatedMovies).toHaveBeenCalled();
-    expect(component.isLoading()).toBeFalse();
     expect(displayed().length).toBe(2);
   });
 
-  it('loadNowPlayingMovies: en error muestra toast y apaga loading', () => {
+  it('onCategoryChange: en error muestra toast', () => {
+    component.selectedCategory = 'now_playing';
     apiSpy.getNowPlayingMovies.and.returnValue(
       throwError(() => new Error('fail'))
     );
 
-    component.loadNowPlayingMovies();
+    component.onCategoryChange();
 
     expect(apiSpy.getNowPlayingMovies).toHaveBeenCalled();
     expect(toastSpy.error).toHaveBeenCalledWith(
       'Error',
       'No se pudieron cargar las películas'
     );
-    expect(component.isLoading()).toBeFalse();
   });
 
   it('onCategoryChange: limpia searchTerm y carga categoría seleccionada', () => {
-    const spyLoad = spyOn<any>(
-      component,
-      'loadMoviesByCategory'
-    ).and.callThrough();
     component.selectedCategory = 'top_rated';
     apiSpy.getTopRatedMovies.and.returnValue(of(list()));
 
     component.onCategoryChange();
 
     expect(component.searchTerm).toBe('');
-    expect(spyLoad).toHaveBeenCalled();
     expect(apiSpy.getTopRatedMovies).toHaveBeenCalled();
   });
 
@@ -163,59 +158,53 @@ describe('MovieListComponent (AAA + Builders)', () => {
 
     const call = apiSpy.searchMovies.calls.mostRecent();
     expect(call.args[0]).toBe('batman');
-    expect(component.isLoading()).toBeFalse();
     expect(displayed().length).toBe(2);
   });
 
-  it('onSearch: vacío → usa loadMoviesByCategory (popular por defecto)', () => {
+  it('onSearch: vacío → carga populares por defecto', () => {
     component.searchTerm = '   ';
-    const spyLoad = spyOn<any>(
-      component,
-      'loadMoviesByCategory'
-    ).and.callThrough();
     apiSpy.getPopularMovies.calls.reset();
     apiSpy.getPopularMovies.and.returnValue(of(list()));
 
     component.onSearch();
 
-    expect(spyLoad).toHaveBeenCalled();
     expect(apiSpy.getPopularMovies).toHaveBeenCalled();
   });
 
   it('toggleFavoritesFilter: filtra solo favoritos', () => {
-    component['applyFilters']();
+    component['applyToggles'](storeStub.movies());
     expect(displayed().length).toBe(2);
 
     storeStub.toggleFavorite(1);
     component.toggleFavoritesFilter();
 
-    expect(component['showOnlyFavorites']).toBeTrue();
+    expect(component.showOnlyFavorites).toBeTrue();
     expect(displayed().map((m: Movie) => m.id)).toEqual([1]);
   });
 
   it('toggleWatchedFilter: filtra solo vistas', () => {
-    component['applyFilters']();
+    component['applyToggles'](storeStub.movies());
     expect(displayed().length).toBe(2);
 
     storeStub.toggleWatched(2);
     component.toggleWatchedFilter();
 
-    expect(component['showOnlyWatched']).toBeTrue();
+    expect(component.showOnlyWatched).toBeTrue();
     expect(displayed().map((m: Movie) => m.id)).toEqual([2]);
   });
 
-  it('handleMovieCardEvent: favoriteToggle re-aplica filtros y muta store', () => {
-    component['applyFilters']();
+  it('handleCard: favoriteToggle re-aplica filtros y muta store', () => {
+    component['applyToggles'](storeStub.movies());
     expect(displayed().length).toBe(2);
 
-    component.handleMovieCardEvent({ type: 'favoriteToggle', movieId: 1 });
+    component.handleCard({ type: 'favoriteToggle', movieId: 1 });
 
     expect(storeStub.getMovieById(1)!.isFavorite).toBeTrue();
     expect(displayed().length).toBe(2);
   });
 
-  it('handleMovieCardEvent: viewDetails llama toast.info', () => {
-    component.handleMovieCardEvent({ type: 'viewDetails', movieId: 99 });
+  it('handleCard: viewDetails llama toast.info', () => {
+    component.handleCard({ type: 'viewDetails', movieId: 99 });
     expect(toastSpy.info).toHaveBeenCalledWith(
       'Detalles',
       'Ver detalles de película ID: 99'

@@ -1,5 +1,17 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  computed,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,7 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { FormsModule } from '@angular/forms';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import {
   MovieCardComponent,
@@ -15,14 +27,14 @@ import {
 } from '../movie-card/movie-card.component';
 import { MovieApiService } from '../../services/movie-api.service';
 import { MovieStoreService } from '../../services/movie-store.service';
-import { Movie } from '../../interfaces/movie.interface';
-import { Genre } from '../../interfaces/genre.interface';
 import { ToastService } from '@core/services/toast.service';
 
-/**
- * Componente principal para listar y gestionar películas
- * Responsabilidad: Orquestar carga de datos, filtros y acciones CRUD
- */
+import { GenreResponse } from '../../interfaces/genre.interface';
+import { Movie } from '../../interfaces/movie.interface';
+import { MovieList, Result } from '../../interfaces/tmdb-response.interface';
+
+type Category = 'popular' | 'top_rated' | 'now_playing' | 'upcoming' | 'custom';
+
 @Component({
   selector: 'app-movie-list',
   standalone: true,
@@ -36,185 +48,244 @@ import { ToastService } from '@core/services/toast.service';
     MatInputModule,
     MatSelectModule,
     MatProgressSpinnerModule,
+    MatButtonToggleModule,
     MovieCardComponent,
   ],
   templateUrl: './movie-list.component.html',
   styleUrl: './movie-list.component.scss',
 })
-export class MovieListComponent implements OnInit {
-  private readonly movieApiService = inject(MovieApiService);
-  public readonly movieStore = inject(MovieStoreService);
-  private readonly toastService = inject(ToastService);
+export class MovieListComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly api = inject(MovieApiService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+  public readonly store = inject(MovieStoreService);
+
+  @ViewChild('sentinel', { static: false }) sentinel!: ElementRef<HTMLElement>;
 
   public searchTerm = '';
-  public selectedCategory = 'popular';
+  public selectedCategory: Category = 'popular';
   public showOnlyFavorites = false;
   public showOnlyWatched = false;
-  public readonly isLoading = signal(false);
-  public readonly genres = signal<Genre[]>([]);
 
-  public readonly displayedMovies = signal<Movie[]>([]);
+  public readonly genres = signal<GenreResponse['genres']>([]);
+  public readonly displayed = signal<Movie[]>([]);
+
+  private readonly page = signal<number>(1);
+  private readonly totalPages = signal<number>(1);
+  private readonly isLoading = signal<boolean>(false);
+
+  public readonly isLoadingMore = computed<boolean>(() => this.isLoading());
+  public readonly hasMorePages = computed<boolean>(
+    () => this.page() < this.totalPages()
+  );
+
+  public readonly toggleGroupValue = computed<string[]>(() => {
+    const values: string[] = [];
+    if (this.showOnlyFavorites) values.push('fav');
+    if (this.showOnlyWatched) values.push('seen');
+    return values;
+  });
+
+  private observer: IntersectionObserver | null = null;
 
   ngOnInit(): void {
     this.loadGenres();
-    this.loadPopularMovies();
+    this.resetAndLoad();
   }
 
-  public loadPopularMovies(): void {
-    this.isLoading.set(true);
-    this.movieApiService.getPopularMovies().subscribe({
-      next: (response) => {
-        this.movieStore.setMovies(response.results);
-        this.applyFilters();
-        this.isLoading.set(false);
-      },
-      error: (error) => {
-        this.toastService.error('Error', 'No se pudieron cargar las películas');
-        this.isLoading.set(false);
-      },
-    });
+  ngAfterViewInit(): void {
+    this.setupObserver();
   }
 
-  public loadTopRatedMovies(): void {
+  ngOnDestroy(): void {
+    this.observer?.disconnect();
+    this.observer = null;
+  }
+
+  private setupObserver(): void {
+    if (!this.sentinel?.nativeElement) return;
+
+    this.observer?.disconnect();
+
+    this.observer = new IntersectionObserver(
+      (entries: IntersectionObserverEntry[]) => {
+        const entry = entries[0];
+        if (!entry) return;
+
+        if (entry.isIntersecting && this.hasMorePages() && !this.isLoading()) {
+          this.loadNextPage();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '400px 0px',
+        threshold: 0.01,
+      }
+    );
+
+    this.observer.observe(this.sentinel.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    this.page.set(this.page() + 1);
+    this.fetch();
+  }
+
+  public resetAndLoad(): void {
+    this.page.set(1);
+    this.totalPages.set(1);
+    this.isLoading.set(false);
+    this.store.setMovies([]);
+    this.displayed.set([]);
+    this.fetch();
+  }
+
+  private fetch(): void {
+    if (this.selectedCategory === 'custom') {
+      const customMovies = this.store.customMovies();
+      this.displayed.set(this.applyToggles(customMovies));
+      this.totalPages.set(1);
+      this.isLoading.set(false);
+      return;
+    }
+
     this.isLoading.set(true);
-    this.movieApiService.getTopRatedMovies().subscribe({
-      next: (response) => {
-        this.movieStore.setMovies(response.results);
-        this.applyFilters();
+    const currentPage = this.page();
+    const trimmed = this.searchTerm.trim();
+
+    const request$ =
+      trimmed.length > 0
+        ? this.api.searchMovies(trimmed, { page: currentPage })
+        : this.getCategoryCall(this.selectedCategory, currentPage);
+
+    request$.subscribe({
+      next: (resp: MovieList) => {
+        const prevTmdb: Result[] = this.store.tmdbMovies();
+        const prevIds = new Set<number>(prevTmdb.map((m: Result) => m.id));
+
+        const uniqueNew: Result[] = resp.results.filter(
+          (r: Result) => !prevIds.has(r.id)
+        );
+
+        const combinedResults: Result[] = [...prevTmdb, ...uniqueNew];
+
+        this.store.setMovies(combinedResults);
+
+        this.displayed.set(this.applyToggles(this.store.movies()));
+        this.totalPages.set(resp.total_pages ?? 1);
         this.isLoading.set(false);
       },
       error: () => {
-        this.toastService.error('Error', 'No se pudieron cargar las películas');
+        this.toast.error('Error', 'No se pudieron cargar las películas');
         this.isLoading.set(false);
       },
     });
   }
 
-  public loadNowPlayingMovies(): void {
-    this.isLoading.set(true);
-    this.movieApiService.getNowPlayingMovies().subscribe({
-      next: (response) => {
-        this.movieStore.setMovies(response.results);
-        this.applyFilters();
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.toastService.error('Error', 'No se pudieron cargar las películas');
-        this.isLoading.set(false);
-      },
-    });
-  }
-
-  public loadUpcomingMovies(): void {
-    this.isLoading.set(true);
-    this.movieApiService.getUpcomingMovies().subscribe({
-      next: (response) => {
-        this.movieStore.setMovies(response.results);
-        this.applyFilters();
-        this.isLoading.set(false);
-      },
-      error: () => {
-        this.toastService.error('Error', 'No se pudieron cargar las películas');
-        this.isLoading.set(false);
-      },
-    });
+  private getCategoryCall(cat: Category, page: number) {
+    switch (cat) {
+      case 'popular':
+        return this.api.getPopularMovies({ page });
+      case 'top_rated':
+        return this.api.getTopRatedMovies({ page });
+      case 'now_playing':
+        return this.api.getNowPlayingMovies({ page });
+      case 'upcoming':
+        return this.api.getUpcomingMovies({ page });
+      default:
+        return this.api.getPopularMovies({ page });
+    }
   }
 
   private loadGenres(): void {
-    this.movieApiService.getGenres().subscribe({
-      next: (response) => {
-        this.genres.set(response.genres);
-      },
-      error: () => {
-        console.warn('No se pudieron cargar los géneros');
-      },
+    this.api.getGenres().subscribe({
+      next: (r: GenreResponse) => this.genres.set(r.genres),
+      error: () => console.warn('No se pudieron cargar los géneros'),
     });
   }
 
   public onSearch(): void {
-    if (this.searchTerm.trim()) {
-      this.isLoading.set(true);
-      this.movieApiService.searchMovies(this.searchTerm).subscribe({
-        next: (response) => {
-          this.movieStore.setMovies(response.results);
-          this.applyFilters();
-          this.isLoading.set(false);
-        },
-        error: () => {
-          this.toastService.error('Error', 'Error en la búsqueda');
-          this.isLoading.set(false);
-        },
-      });
-    } else {
-      this.loadMoviesByCategory();
-    }
+    this.page.set(1);
+    this.totalPages.set(1);
+    this.store.setMovies([]);
+    this.displayed.set([]);
+    this.fetch();
   }
 
   public onCategoryChange(): void {
     this.searchTerm = '';
-    this.loadMoviesByCategory();
+    this.resetAndLoad();
   }
 
   public toggleFavoritesFilter(): void {
     this.showOnlyFavorites = !this.showOnlyFavorites;
-    this.applyFilters();
+    this.displayed.set(this.applyToggles(this.store.movies()));
   }
 
   public toggleWatchedFilter(): void {
     this.showOnlyWatched = !this.showOnlyWatched;
-    this.applyFilters();
+    this.displayed.set(this.applyToggles(this.store.movies()));
   }
 
-  private loadMoviesByCategory(): void {
-    switch (this.selectedCategory) {
-      case 'popular':
-        this.loadPopularMovies();
-        break;
-      case 'top_rated':
-        this.loadTopRatedMovies();
-        break;
-      case 'now_playing':
-        this.loadNowPlayingMovies();
-        break;
-      case 'upcoming':
-        this.loadUpcomingMovies();
-        break;
-    }
+  private applyToggles(movies: Movie[]): Movie[] {
+    let list: Movie[] = movies;
+    if (this.showOnlyFavorites) list = list.filter((m: Movie) => m.isFavorite);
+    if (this.showOnlyWatched) list = list.filter((m: Movie) => m.isWatched);
+
+    return list.sort((a, b) => {
+      const aIsLocal = a.id < 0;
+      const bIsLocal = b.id < 0;
+
+      if (aIsLocal && !bIsLocal) return -1;
+      if (!aIsLocal && bIsLocal) return 1;
+
+      return 0;
+    });
   }
 
-  private applyFilters(): void {
-    let movies = this.movieStore.movies();
-
-    if (this.showOnlyFavorites) {
-      movies = movies.filter((movie) => movie.isFavorite);
-    }
-
-    if (this.showOnlyWatched) {
-      movies = movies.filter((movie) => movie.isWatched);
-    }
-
-    this.displayedMovies.set(movies);
-  }
-
-  public handleMovieCardEvent(event: MovieCardEvent): void {
+  public handleCard(event: MovieCardEvent): void {
     switch (event.type) {
-      case 'favoriteToggle':
-        this.movieStore.toggleFavorite(event.movieId);
-        this.applyFilters();
+      case 'favoriteToggle': {
+        this.store.toggleFavorite(event.movieId);
+        this.displayed.set(this.applyToggles(this.store.movies()));
         break;
-
-      case 'watchedToggle':
-        this.movieStore.toggleWatched(event.movieId);
-        this.applyFilters();
+      }
+      case 'watchedToggle': {
+        this.store.toggleWatched(event.movieId);
+        this.displayed.set(this.applyToggles(this.store.movies()));
         break;
-
-      case 'viewDetails':
-        // TODO: Navegar a página de detalles o abrir modal
-        this.toastService.info(
+      }
+      case 'viewDetails': {
+        this.toast.info(
           'Detalles',
           `Ver detalles de película ID: ${event.movieId}`
         );
+        this.router.navigate(['/movies', event.movieId]);
         break;
+      }
     }
+  }
+
+  public loadMore(): void {
+    if (this.isLoading() || !this.hasMorePages()) return;
+    this.loadNextPage();
+  }
+
+  public onSearchInput(): void {
+    if (this.searchTerm.trim().length === 0) {
+      this.onSearch();
+    }
+  }
+
+  public clearSearch(): void {
+    this.searchTerm = '';
+    this.onSearch();
+  }
+
+  public resetFilters(): void {
+    this.searchTerm = '';
+    this.showOnlyFavorites = false;
+    this.showOnlyWatched = false;
+    this.onSearch();
   }
 }
