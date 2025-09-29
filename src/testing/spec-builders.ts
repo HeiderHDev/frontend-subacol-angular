@@ -1,7 +1,7 @@
 import { Genre, Movie, MovieList, Result } from '@features/movies/interfaces';
 
 export class ResultBuilder {
-  private data: Result = {
+  private readonly data: Result = {
     adult: false,
     backdrop_path: '',
     genre_ids: [],
@@ -11,7 +11,7 @@ export class ResultBuilder {
     overview: '',
     popularity: 0,
     poster_path: '',
-    release_date: new Date('2024-01-01'),
+    release_date: '2024-01-01',
     title: '',
     video: false,
     vote_average: 0,
@@ -34,7 +34,7 @@ export class ResultBuilder {
     this.data.genre_ids = ids;
     return this;
   }
-  withRelease(date: Date) {
+  withRelease(date: string) {
     this.data.release_date = date;
     return this;
   }
@@ -45,15 +45,15 @@ export class ResultBuilder {
 }
 
 export class MovieListBuilder {
-  private data: MovieList = {
-    dates: { minimum: new Date('2025-01-01'), maximum: new Date('2025-12-31') },
+  private readonly data: MovieList = {
+    dates: { minimum: '2025-01-01', maximum: '2025-12-31' },
     page: 1,
     results: [],
     total_pages: 1,
     total_results: 0,
   };
 
-  withDates(min: Date, max: Date) {
+  withDates(min: string, max: string) {
     this.data.dates = { minimum: min, maximum: max };
     return this;
   }
@@ -77,7 +77,7 @@ export class MovieListBuilder {
 }
 
 export class GenreBuilder {
-  private data: Genre = { id: 0, name: '' };
+  private readonly data: Genre = { id: 0, name: '' };
 
   withId(id: number) {
     this.data.id = id;
@@ -95,7 +95,7 @@ export class GenreBuilder {
 
 /** Builder de Movie (modelo interno del store) */
 export class MovieBuilder {
-  private data: Movie;
+  private readonly data: Movie;
 
   constructor() {
     this.data = {
@@ -108,13 +108,11 @@ export class MovieBuilder {
       overview: '',
       popularity: 0,
       poster_path: '',
-      release_date: new Date('2024-01-01'),
+      release_date: '2024-01-01',
       title: '',
       video: false,
       vote_average: 0,
       vote_count: 0,
-
-      // Campos locales
       isFavorite: false,
       personalRating: null,
       personalNotes: '',
@@ -128,7 +126,7 @@ export class MovieBuilder {
     return new MovieBuilder()
       .withId(r.id)
       .withTitle(r.title)
-      .withPoster(r.poster_path)
+      .withPoster(r.poster_path ?? '')
       .withGenres(r.genre_ids)
       .withRelease(r.release_date);
   }
@@ -149,7 +147,7 @@ export class MovieBuilder {
     this.data.genre_ids = ids;
     return this;
   }
-  withRelease(d: Date) {
+  withRelease(d: string) {
     this.data.release_date = d;
     return this;
   }
